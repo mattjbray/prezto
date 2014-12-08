@@ -69,6 +69,7 @@ fi
   fi
 
   alias cookbooks='tmux attach-session -t cookbooks || (cd /opt/optimor/src/optimor-cookbooks && tmux new-session -s cookbooks)'
+  alias ap=ansible-playbook
 
   alias bmdebug='tmux attach-session -t debug || (cd /opt/optimor/src/billmonitor/debug && tmux new-session -s debug)'
   alias bmfrontend='tmux attach-session -t frontend || (cd /opt/optimor/src/billmonitor-frontend/master && tmux new-session -s frontend)'
