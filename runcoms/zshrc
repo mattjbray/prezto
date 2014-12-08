@@ -68,7 +68,6 @@ fi
     bmvenv $BMENV
   fi
 
-  alias cbenv='source /opt/optimor/src/ansible/venv/bin/activate && source /opt/optimor/src/ansible/hacking/env-setup'
   alias cookbooks='tmux attach-session -t cookbooks || (cd /opt/optimor/src/optimor-cookbooks && tmux new-session -s cookbooks)'
 
   alias bmdebug='tmux attach-session -t debug || (cd /opt/optimor/src/billmonitor/debug && tmux new-session -s debug)'
