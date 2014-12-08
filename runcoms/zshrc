@@ -77,6 +77,28 @@ fi
 
   alias infab='cat doc/some_fabs.md | grep -iC 2'
 
+#====[ Optimor/Docker ]====
+
+  backend_bash() {
+    mongodb=$1
+    shift
+    set -x
+    # use the $debian_chroot var to display the mongodb name in the prompt
+    docker run -it --rm --name backend-bash-$mongodb -e BM_ENV=development --link $mongodb:mongodb -v $(pwd):/opt/optimor/src/billmonitor/theia_backend -e debian_chroot=$mongodb "$@" registry.billmonitor.com:5000/theia_backend_test bash
+    set +x
+  }
+
+  engine_bash() {
+    mongodb=$1
+    shift
+    set -x
+    # use the $debian_chroot var to display the mongodb name in the prompt
+    docker run -it --rm --name engine-bash-$mongodb -e BM_ENV=development --link $mongodb:mongodb -v $(pwd):/opt/optimor/src/billmonitor/theia_backend -e debian_chroot=$mongodb/engine "$@" registry.billmonitor.com:5000/theia_engine bash
+    set +x
+  }
+
+  alias frontend_bash='set -x; docker run -it --rm --name theia-frontend-builder -v $(pwd):/host_code -p 9000:9000 -p 35729:35729 -e DOCKER_USER_ID=$(id -u) -e DOCKER_GROUP_ID=$(id -g) registry.billmonitor.com:5000/theia-frontend-builder /host_code/bin/in_docker/bash_with_host_user; set +x'
+
 #====[ PATH ]====
 
   export PATH=$HOME/.local/bin:$PATH
