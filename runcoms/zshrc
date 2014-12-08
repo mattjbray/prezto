@@ -39,6 +39,11 @@ fi
 
   alias switch-wifi='sudo netctl-auto switch-to'
 
+#====[ ssh-agent ]====
+
+  alias startx='ssh-agent startx'
+  alias ssh-add-all='ssh-add ~/.ssh/engine.pem ~/.ssh/id_rsa ~/.ssh/optimor_id_rsa'
+
 #====[ Optimor ]====
 
   export PATH_OPTIMOR='/opt/optimor'
