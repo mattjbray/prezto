@@ -50,7 +50,12 @@ fi
   export PATH=$PATH_OPTIMOR/bin/inpath:$PATH
 
   bmenv() {
-    tmux attach -t $1 || (export BMENV=$1 && cd /opt/optimor/src/billmonitor/$1 && tmux new-session -s $1)
+    if [ $(tmux list-sessions -F '#{session_name}' | grep "^$1$") ]; then
+      # session exists
+      tmux attach -t $1
+    else
+      export BMENV=$1 && cd /opt/optimor/src/billmonitor/$1 && tmux new-session -s $1
+    fi
   }
 
   bmvenv() {
