@@ -86,11 +86,20 @@ fi
     shift
     set -x
     # use the $debian_chroot var to display the mongodb name in the prompt
-    docker run -it --rm --name backend-bash-$mongodb -e BM_ENV=development --link $mongodb:mongodb -v $(pwd):/opt/optimor/src/billmonitor/theia_backend -e debian_chroot=$mongodb "$@" registry.billmonitor.com:5000/theia_backend_test bash
+    docker run -it --rm \
+               --name backend-bash-$mongodb \
+               -e BM_ENV=development \
+               --link $mongodb:mongodb \
+               -v $(pwd):/opt/optimor/src/billmonitor/theia_backend \
+               -e debian_chroot=$mongodb \
+               -e PYTHONIOENCODING="utf-8" \
+               "$@" \
+               registry.billmonitor.com:5000/theia_backend_dev
     set +x
   }
 
-  alias build_engine='set -x; docker run -it --rm -v $(pwd):/host_code registry.billmonitor.com:5000/theia_engine_builder; set +x'
+  alias compile_engine='set -x; docker run -it --rm -v $(pwd):/host_code registry.billmonitor.com:5000/theia_engine_builder; set +x'
+  alias compile_engine_debug='set -x; docker run -it --rm -v $(pwd):/host_code registry.billmonitor.com:5000/theia_engine_builder /bin/bash -c "cd /host_code/engine/cxx && bjam debug"; set +x'
 
   alias frontend_bash='set -x; docker run -it --rm --name theia-frontend-builder -v $(pwd):/host_code -p 9000:9000 -p 35729:35729 -e DOCKER_USER_ID=$(id -u) -e DOCKER_GROUP_ID=$(id -g) registry.billmonitor.com:5000/theia-frontend-builder /host_code/bin/in_docker/bash_with_host_user; set +x'
 
