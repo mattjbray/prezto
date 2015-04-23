@@ -79,23 +79,96 @@ fi
   alias infab='cat doc/some_fabs.md | grep -iC 2'
 
 #====[ Optimor/Docker ]====
+  # run the ansible playbook to open any tunnels and start a mongodb ambassador
+  mongodb_ambassador() {
+    case $1 in
+      dev)
+        playbook=mongodb.yml
+        ;;
+      bmprod)
+        playbook=ambassadors/mongodb-bm-prod.yml
+        ;;
+      tprod)
+        playbook=ambassadors/mongodb-theia-prod.yml
+        ;;
+      tstaging)
+        playbook=ambassadors/mongodb-theia-staging.yml
+        ;;
+      *)
+        echo "valid args are: dev, tprod, tstaging"
+        return 1
+        ;;
+    esac
+    (cd /opt/optimor/src/optimor-cookbooks/ansible && ansible-playbook -i dev playbooks/dev/$playbook)
+  }
 
   # usage: backend_bash <mongodb_ambassador> [<docker_args>...]
   backend_bash() {
-    mongodb=$1
+    mongo_env=$1
+
+    # any other args will be passed to docker run
     shift
-    set -x
-    # use the $debian_chroot var to display the mongodb name in the prompt
-    docker run -it --rm \
-               --name backend-bash-$mongodb \
-               -e BM_ENV=development \
-               --link $mongodb:mongodb \
-               -v $(pwd):/opt/optimor/src/billmonitor/theia_backend \
-               -e debian_chroot=$mongodb \
-               -e PYTHONIOENCODING="utf-8" \
-               "$@" \
-               registry.billmonitor.com:5000/theia_backend_dev
-    set +x
+
+    case $mongo_env in
+      dev)
+        mongodb=mongodb_dev
+        xpra_port=10000
+        extra_args=(-p 8000:8000)
+        bm_env=development
+        ;;
+      bmprod)
+        mongodb=mongodb_bm_prod
+        xpra_port=10001
+        bm_env=bm_debug
+        ;;
+      tprod)
+        mongodb=mongodb_theia_prod
+        xpra_port=10002
+        bm_env=production
+        ;;
+      tstaging)
+        mongodb=mongodb_theia_staging
+        xpra_port=10003
+        bm_env=staging
+        ;;
+      *)
+        echo "valid args are: dev, bmprod, tprod, tstaging"
+        return 1
+        ;;
+    esac
+
+    name=backend-bash-$mongodb
+
+    if [[ -n $(docker ps -a | grep "\<$name\>") ]]; then
+      # exec bash in existing container
+      docker start $name
+      set -x
+      docker exec -it $name bash
+      set +x
+    else
+      # start mongodb/open tunnel
+      mongodb_ambassador $mongo_env
+
+      # create new container
+      set -x
+      # use the $debian_chroot var to display the mongodb name in the prompt
+      docker run -it --rm \
+                 --name $name \
+                 -e BM_ENV=$bm_env \
+                 --link $mongodb:mongodb \
+                 -v $(pwd):/opt/optimor/src/billmonitor/theia_backend \
+                 -v /opt/optimor/var:/opt/optimor/var \
+                 -v /opt/optimor/var/log:/opt/optimor/var/log \
+                 -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+                 -e DISPLAY=$DISPLAY \
+                 -u optimor \
+                 -e debian_chroot=$mongodb \
+                 -e PYTHONIOENCODING="utf-8" \
+                 $extra_args \
+                 "$@" \
+                 registry.billmonitor.com:5000/theia_backend_dev bash
+      set +x
+    fi
   }
 
   alias compile_engine='set -x; docker run -it --rm -v $(pwd):/host_code registry.billmonitor.com:5000/theia_engine_builder; set +x'
