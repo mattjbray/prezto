@@ -176,6 +176,8 @@ fi
 
   alias frontend_bash='set -x; docker run -it --rm --name theia-frontend-builder -v $(pwd):/host_code -p 9000:9000 -p 35729:35729 -e DOCKER_USER_ID=$(id -u) -e DOCKER_GROUP_ID=$(id -g) registry.billmonitor.com:5000/theia-frontend-builder /host_code/bin/in_docker/bash_with_host_user; set +x'
 
+  alias docker-run-here='docker run -it --rm -v "$(pwd):$(pwd)" --workdir="$(pwd)"'
+
 #====[ PATH ]====
 
   export PATH=$HOME/.local/bin:$PATH
